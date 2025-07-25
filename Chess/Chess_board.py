@@ -29,8 +29,7 @@ friendly_pieces = ["r","n","k","b","q","p"]
 #------------------------------------------------
 
 
-# for row in matrix:
-#     print(row)
+
 print("======================")
 for row_index in range(8):
     print("|",8 - row_index,"" ,end=" ")  # Print row label (8 to 1)
