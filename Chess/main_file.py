@@ -14,33 +14,33 @@ def parse_coord(coord):
 
 def main():
     
-    matrix, friendly_pieces = setup_board()
+    matrix, black_pieces, white_pieces = setup_board()
     print_board(matrix)
     turn = True  # True for white's turn, False for black
 
     while True:
 
-        if turn == False:
-            print("black turn")
-        else:
-            print("white turn")
+        print("White turn" if turn else "Black turn")
+        while True:
+                coord = input("Choose piece (e.g. a2): ")
+                choose_piece_x, choose_piece_y = parse_coord(coord)
 
-         
-        coord = input("Choose piece (e.g. a2): ")
-        choose_piece_x, choose_piece_y = parse_coord(coord)
-        if not (0 <= choose_piece_x < 8 and 0 <= choose_piece_y < 8):
-            print("Invalid input. Try again.")
-            continue
+                if not (0 <= choose_piece_x < 8 and 0 <= choose_piece_y < 8):
+                    print("Invalid input. Try again.")
+                    continue
 
-        choose_piece(choose_piece_x, choose_piece_y, matrix)
+                if choose_piece(choose_piece_x, choose_piece_y, matrix, turn, black_pieces, white_pieces):
+                    break  # valid selection, exit inner loop
+                else:
+                    print("Invalid selection. Try again.")
 
-        coord = input("Enter move (e.g. a3): ")
+        coord = input("Enter move (e.g. a2): ")
         new_piece_x, new_piece_y = parse_coord(coord)
         if not (0 <= new_piece_x < 8 and 0 <= new_piece_y < 8):
             print("Invalid move. Try again.")
             continue
 
-        Total_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces)
+        Total_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces)
         print_board(matrix)
         
         turn = not turn  # Switch turns

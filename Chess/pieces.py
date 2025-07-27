@@ -1,27 +1,31 @@
+from board import setup_board
 
 
 
-
-def knight_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces):
+def knight_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces):
     dx = abs(new_piece_x - choose_piece_x)# abs stgands
     dy = abs(new_piece_y - choose_piece_y)
-    if ((dx == 2 and dy == 1) or (dx == 1 and dy == 2)) and matrix[new_piece_x][new_piece_y] not in friendly_pieces:
-        if matrix[new_piece_x][new_piece_y] !="-":
+    if ((dx == 2 and dy == 1) or (dx == 1 and dy == 2)) and (
+    matrix[new_piece_x][new_piece_y] == "-" or
+    (matrix[new_piece_x][new_piece_y] in white_pieces and matrix[choose_piece_x][choose_piece_y] in black_pieces) or
+    (matrix[new_piece_x][new_piece_y] in black_pieces and matrix[choose_piece_x][choose_piece_y] in white_pieces)
+):
+        if matrix[new_piece_x][new_piece_y] != "-":
             print("Knight captured successfully.") 
         else:
             print("Knight moved successfully.")
-        matrix[new_piece_x][new_piece_y] = "n"
+        matrix[new_piece_x][new_piece_y] = matrix[choose_piece_x][choose_piece_y]
         matrix[choose_piece_x][choose_piece_y] = "-"
     else:
         print("Invalid knight move.")
 
-def Pawn_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces):
+def Pawn_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces):
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
     path_clear = True
     if dx == 1 and dy == 0 and new_piece_x < choose_piece_x and matrix[new_piece_x][new_piece_y] == "-":
         print("Pawn moved successfully.")
-    elif dx == 1 and dy == 1 and new_piece_x < choose_piece_x and matrix[new_piece_x][new_piece_y] != "-" and matrix[new_piece_x][new_piece_y] not in friendly_pieces: 
+    elif dx == 1 and dy == 1 and new_piece_x < choose_piece_x and matrix[new_piece_x][new_piece_y] != "-" and matrix[new_piece_x][new_piece_y] not in white_pieces: 
         print("Pawn captured successfully.")
     elif (
         dx == 2 and
@@ -30,9 +34,9 @@ def Pawn_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matr
         new_piece_x == 4 and 
         new_piece_x < choose_piece_x and
         matrix[new_piece_x][new_piece_y] == "-" and
-        matrix[new_piece_x][new_piece_y] not in friendly_pieces and
-        matrix[choose_piece_x - 1][choose_piece_y] not in friendly_pieces and
-        matrix[choose_piece_x][choose_piece_y] == "p"
+        matrix[new_piece_x][new_piece_y] not in white_pieces and
+        matrix[choose_piece_x - 1][choose_piece_y] not in white_pieces and
+        matrix[choose_piece_x][choose_piece_y] == "P"
         ):
 
         print("Pawn moved successfully.")
@@ -41,27 +45,27 @@ def Pawn_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matr
         path_clear = False
     
     if path_clear:
-        matrix[new_piece_x][new_piece_y] = "p"
+        matrix[new_piece_x][new_piece_y] = matrix[choose_piece_x][choose_piece_y]
         matrix[choose_piece_x][choose_piece_y] = "-"
 
-def king_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces):
+def king_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces):
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
-    if max(dx, dy) == 1 and matrix[new_piece_x][new_piece_y] not in friendly_pieces:
+    if max(dx, dy) == 1 and matrix[new_piece_x][new_piece_y] not in white_pieces:
         if matrix[new_piece_x][new_piece_y] !="-":
             print("King captured successfully.") 
         else:
             print("King moved successfully.")
 
 
-        matrix[new_piece_x][new_piece_y] = "k"
+        matrix[new_piece_x][new_piece_y] = matrix[choose_piece_x][choose_piece_y]
         matrix[choose_piece_x][choose_piece_y] = "-"
     else:
         print("Invalid king move.")
 
-def Rook_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces):
+def Rook_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces):
 #check if there is a piece in the way
-    if new_piece_x == choose_piece_x or new_piece_y == choose_piece_y and matrix[new_piece_x][new_piece_y] not in friendly_pieces:
+    if new_piece_x == choose_piece_x or new_piece_y == choose_piece_y and matrix[new_piece_x][new_piece_y] not in white_pieces:
         distance = max(abs(new_piece_x - choose_piece_x), abs(new_piece_y - choose_piece_y))
         path_clear  = True
         # Direction of movement: -1, 0, or +1
@@ -80,17 +84,17 @@ def Rook_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matr
                 print("Rook captured successfully.") 
             else:
                 print("Rook moved successfully.")
-            matrix[new_piece_x][new_piece_y] = "r"
+            matrix[new_piece_x][new_piece_y] = matrix[choose_piece_x][choose_piece_y]
             matrix[choose_piece_x][choose_piece_y] = "-"       
                 
     else:
         print("Invalid move: rook can only move in straight lines")
 
-def bishop_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces):
+def bishop_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces):
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
     path_clear  = True
-    if dx == dy and matrix[new_piece_x][new_piece_y] not in friendly_pieces:
+    if dx == dy and matrix[new_piece_x][new_piece_y] not in white_pieces:
         distance = dx #or dy. no need for max(dx, dy)
         x_step = (new_piece_x - choose_piece_x) // distance if new_piece_x != choose_piece_x else 0
         y_step = (new_piece_y - choose_piece_y) // distance if new_piece_y != choose_piece_y else 0
@@ -107,17 +111,17 @@ def bishop_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, ma
                 print("bishop captured successfully.") 
             else:
                 print("bishop moved successfully.")
-            matrix[new_piece_x][new_piece_y] = "b"
+            matrix[new_piece_x][new_piece_y] = matrix[choose_piece_x][choose_piece_y]
             matrix[choose_piece_x][choose_piece_y] = "-"
                              
     else:
         print("Invalid move:bishop can only move in diagonal  lines")      
 
-def Queen_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces):
+def Queen_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces):
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
     path_clear  = True
-    if (dx == dy or new_piece_x == choose_piece_x or new_piece_y == choose_piece_y) and matrix[new_piece_x][new_piece_y] not in friendly_pieces:
+    if (dx == dy or new_piece_x == choose_piece_x or new_piece_y == choose_piece_y) and matrix[new_piece_x][new_piece_y] not in white_pieces:
         distance = max(dx, dy)
         x_step = (new_piece_x - choose_piece_x) // distance if new_piece_x != choose_piece_x else 0
         y_step = (new_piece_y - choose_piece_y) // distance if new_piece_y != choose_piece_y else 0
@@ -134,14 +138,13 @@ def Queen_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, mat
                 print("Queen captured successfully.") 
             else:
                 print("Queen moved successfully.")
-            matrix[new_piece_x][new_piece_y] = "q"
+            matrix[new_piece_x][new_piece_y] = matrix[choose_piece_x][choose_piece_y]
             matrix[choose_piece_x][choose_piece_y] = "-"
                              
     else:
         print("Invalid move:Queen")    
 
-
-def castling(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces):
+def castling(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces):
     from_p = matrix[choose_piece_x][choose_piece_y]
     to_p = matrix[new_piece_x][new_piece_y]
     path_clear  = True
@@ -173,36 +176,38 @@ def castling(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, f
 
 
 
-def choose_piece(choose_piece_x, choose_piece_y, matrix):
+def choose_piece(choose_piece_x, choose_piece_y, matrix, turn, black_pieces, white_pieces):
     piece = matrix[choose_piece_x][choose_piece_y]
-    names = {
-        "p": "Pawn",
-        "n": "Knight",
-        "k": "King",
-        "r": "Rook",
-        "b": "Bishop",
-        "q": "Queen"
-    }
-    if piece in names:
-        print(f"You have chosen a {names[piece]}.")
-    elif piece == "-":
+
+    if piece == "-":
         print("This square is empty.")
+        return False
+
+    if turn and piece in white_pieces:
+        print(f"You have chosen a {white_pieces[piece]}.")
+        return True
+    elif not turn and piece in black_pieces:
+        print(f"You have chosen a {black_pieces[piece]}.")
+        return True
     else:
         print(f"You have chosen an enemy piece ({piece}).")
+        return False
 
 
 
 
-def Total_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix,friendly_pieces):
-    if matrix[choose_piece_x][choose_piece_y] == "p":
-        Pawn_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces)
-    if matrix[choose_piece_x][choose_piece_y] == "n":
-        knight_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces)
-    if matrix[choose_piece_x][choose_piece_y] == "k":
-        king_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces)
-    if matrix[choose_piece_x][choose_piece_y] == "r":
-        Rook_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces)
-    if matrix[choose_piece_x][choose_piece_y] == "b":
-        bishop_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces)
-    if matrix[choose_piece_x][choose_piece_y] == "q":
-        Queen_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, friendly_pieces)
+def Total_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces):
+    piece = matrix[choose_piece_x][choose_piece_y]
+
+    if piece in ("P", "p"):
+        Pawn_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces)
+    elif piece in ("N", "n"):
+        knight_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces)
+    elif piece in ("K", "k"):
+        king_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces)
+    elif piece in ("R", "r"):
+        Rook_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces)
+    elif piece in ("B", "b"):
+        bishop_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces)
+    elif piece in ("Q", "q"):
+        Queen_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces)
