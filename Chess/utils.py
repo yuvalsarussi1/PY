@@ -47,7 +47,7 @@ def clear_path(matrix, choose_piece_x, choose_piece_y, new_piece_x, new_piece_y)
     return True
 
 
-def pawn_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces,turn): #true if the move is valid 
+def pawn_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y): #true if the move is valid 
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
     if dx == 1 and dy == 1:
@@ -55,20 +55,25 @@ def pawn_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_pie
     elif dx == 1 and dy == 0:
         return True
     
-def knight_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces,):#true if the move is valid
+def knight_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
     return ((dx == 2 and dy == 1) or (dx == 1 and dy == 2))
    
-def bishop_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces):#true if the move is valid
+def bishop_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
     return dx == dy
 
-def rook_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces):#true if the move is valid
+def rook_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
     return new_piece_x == choose_piece_x or new_piece_y == choose_piece_y
 
-def queen_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces):#true if the move is valid
+def queen_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
     return (dx == dy or new_piece_x == choose_piece_x or new_piece_y == choose_piece_y)
+
+def king_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
+    dx = abs(new_piece_x - choose_piece_x)
+    dy = abs(new_piece_y - choose_piece_y)
+    return max(dx, dy) == 1

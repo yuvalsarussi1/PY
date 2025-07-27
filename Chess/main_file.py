@@ -17,7 +17,7 @@ def main():
     matrix, black_pieces, white_pieces = setup_board()
     print_board(matrix)
     turn = True  # True for white's turn, False for black
-
+ 
     while True:
 
         print("White turn" if turn else "Black turn")
@@ -40,21 +40,11 @@ def main():
             print("Invalid move. Try again.")
             continue
 
-        Total_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces)
+        Total_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces, turn)
         print_board(matrix)
         
         turn = not turn  # Switch turns
 
 if __name__ == "__main__":
     main()
-
-    # print("======================")
-    # for row_index in range(8):
-    #     print("|",8 - row_index,"" ,end=" ")  # Print row label (8 to 1)
-    #     for col_index in range(8):
-    #         print(matrix[row_index][col_index], end=" ")
-    #     print("|")
-    # print("|                    |")
-    # print("|  "," a", "b" , "c", "d", "e", "f", "g", "h", "|")
-    # print("======================")
 
