@@ -201,7 +201,7 @@ def Total_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, mat
     piece = matrix[choose_piece_x][choose_piece_y]
     path_clear  = False
     if piece in ("P", "p"):
-        if pawn_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):
+        if pawn_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y,turn):
             path_clear  = True
     elif piece in ("N", "n"):
         if knight_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):
@@ -224,17 +224,23 @@ def Total_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, mat
         queen_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y) and 
         clear_path(matrix, choose_piece_x, choose_piece_y, new_piece_x, new_piece_y)):
             path_clear  = True
-
+    
     if path_clear:
         if(
         not is_same_side(matrix, choose_piece_x, choose_piece_y, new_piece_x, new_piece_y,white_pieces, black_pieces)
         or  is_empty(matrix, new_piece_x, new_piece_y)):
             piece_captured_move(matrix, new_piece_x, new_piece_y, choose_piece_x, choose_piece_y,turn,white_pieces, black_pieces)
+            
+            return True
+    
+    
         
-
-
-
-
+        
+    # else:
+    #     print("Invalid move")
+    #     return False
+    
+    
 
 
 

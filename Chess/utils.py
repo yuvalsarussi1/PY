@@ -1,3 +1,8 @@
+from globals import *
+
+# from main_file import black_score, white_score
+
+
 def is_empty(matrix,new_piece_x, new_piece_y): #true if the new position is empty
     return matrix[new_piece_x][new_piece_y] == "-"
    
@@ -22,12 +27,18 @@ def piece_captured_move(matrix, new_piece_x, new_piece_y, choose_piece_x, choose
     if captured:
         captured_name = black_pieces[target_piece] if turn else white_pieces[target_piece] #captured piece name
         print(f"{captured_name} captured successfully.") 
+        # if turn:
+        #    white_score += piece_values[target_piece]
+        # else:
+        #     black_score += piece_values[target_piece]
+        # print(f"White score: {white_score}, Black score: {black_score}")
     else:
         moved_name = white_pieces[moving_piece] if turn else black_pieces[moving_piece] #moving piece name
         print(f"{moved_name} moved successfully.")
-
     matrix[new_piece_x][new_piece_y] = matrix[choose_piece_x][choose_piece_y] #moving piece to new position
     matrix[choose_piece_x][choose_piece_y] = "-" #clearing old position
+
+
 
 def clear_path(matrix, choose_piece_x, choose_piece_y, new_piece_x, new_piece_y): #true if the path is clear for sliding pieces
     dx = abs(new_piece_x - choose_piece_x)
@@ -42,18 +53,32 @@ def clear_path(matrix, choose_piece_x, choose_piece_y, new_piece_x, new_piece_y)
         check_x = choose_piece_x + i * x_step
         check_y = choose_piece_y + i * y_step
         if matrix[check_x][check_y] != "-":
-            print("Invalid move: piece in the way")
             return False
     return True
 
 
-def pawn_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y): #true if the move is valid 
+def pawn_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y,turn): #true if the move is valid 
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
     if dx == 1 and dy == 1:
-        return True
-    elif dx == 1 and dy == 0:
-        return True
+        if turn and new_piece_x < choose_piece_x:  # white pawn (moves down)
+            return True
+        elif not turn and new_piece_x > choose_piece_x:  # black pawn (moves up)
+            return True
+        
+    if dx == 1 and dy == 0:
+        if turn and new_piece_x < choose_piece_x:
+            return True
+        elif not turn and new_piece_x > choose_piece_x:
+            return True
+        
+    if dx == 2 and dy == 0:
+        if turn and choose_piece_x == 6 and new_piece_x == 4:  # white pawn from row 6 to 4
+            return True
+        elif not turn and choose_piece_x == 1 and new_piece_x == 3:  # black pawn from row 1 to 3
+            return True
+
+    
     
 def knight_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
     dx = abs(new_piece_x - choose_piece_x)
@@ -77,3 +102,7 @@ def king_Movement_condition(new_piece_x, new_piece_y, choose_piece_x, choose_pie
     dx = abs(new_piece_x - choose_piece_x)
     dy = abs(new_piece_y - choose_piece_y)
     return max(dx, dy) == 1
+
+
+def piece_move_counter(matrix, choose_piece_x, choose_piece_y, new_piece_x, new_piece_y): #true if the move is valid
+    selected_piece = matrix[choose_piece_x][choose_piece_y]
