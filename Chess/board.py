@@ -39,5 +39,4 @@ def print_board(matrix):
     print("|                    |")
     print("|   ", "a", "b", "c", "d", "e", "f", "g", "h", "|")
     print("======================")
-    # print(f"White score: {white_score}, Black score: {black_score}")
 
