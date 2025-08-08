@@ -1,52 +1,76 @@
 # from Chess_pieces import pawn_Movement, knight_Movement, king_Movement
 from board import setup_board, print_board
 from utils import *
-from pieces import Total_Movement
+from pieces_conditions import *
+from valid_move import is_valid_move
 
 
 # Define piece values
-piece_values = {
-    "P": 1,  # White Pawn
-    "p": 1,  # Black Pawn
-    "N": 3,  # White Knight
-    "n": 3,  # Black Knight
-    "B": 3,  # White Bishop
-    "b": 3,  # Black Bishop
-    "R": 5,  # White Rook
-    "r": 5,  # Black Rook
-    "Q": 9,  # White Queen
-    "q": 9,  # Black Queen
-    # "K": float('inf'),  # White King (invaluable)
-    # "k": float('inf')   # Black King
-}
+
 
 
 def main():
+    turn = True
+    Wscore = 0
+    Bscore = 0
+    target_piece = "-"
+    move_successful = False
+    Tcount = 0
+    Mcount = 0
+    en_passant_condition = False
+    en_passant_coords = None
+    
     # Set up the board and print it
     matrix, black_pieces, white_pieces = setup_board()
     print_board(matrix)
+    print(f"Moves:{Mcount}|Turns:{Tcount}")
+    print(f"W:{Wscore}|B:{Bscore}")
     
-    #True for white's turn, False for black
-    turn = True
-    # Initialize scores
-    white_score = 0
-    black_score = 0
-
-    # Game loop
+    
     while True:
         print("White turn" if turn else "Black turn")#print whose turn
         
-        #input choose_piece
-        choose_piece_x, choose_piece_y = get_valid_piece_selection(matrix, turn, black_pieces, white_pieces, choose_piece)# Get valid piece selection
-        #input new_piece
-        new_piece_x, new_piece_y = get_valid_piece_move()# Get valid piece move and move
-        #check if move is valid and make it
-        move, black_score, white_score = Total_Movement(new_piece_x, new_piece_y, choose_piece_x, choose_piece_y, matrix, white_pieces, black_pieces, turn, black_score, white_score, piece_values)
+        x, y = select_valid_piece(matrix, turn, black_pieces, white_pieces)# Get valid piece selection
+        cx, cy = select_move_destination()# Get valid piece move and move
+        
+        target_piece = "-"
+        move_successful = False
+
+        next_en_passant_condition, next_en_passant_coords = en_passant_detection(x,y,cx,cy,turn,matrix)
+        
+        valid_move = is_valid_move(cx, cy, x, y, matrix,turn)
+        not_empty = is_enemy_or_empty(matrix, x, y, cx, cy,white_pieces, black_pieces)
+        if valid_move and not_empty:
+            target_piece, move_successful = piece_captured_move(matrix, cx, cy, x, y,turn, white_pieces, black_pieces)
+            Mcount,Tcount = turn_count(Mcount,Tcount)
+        
+
+        #============== En Passant ==============
+        if not move_successful and en_passant_condition:
+            move_successful = en_passant_capture(x,y,cx,cy,turn,matrix,en_passant_coords)
+            if move_successful:
+                target_piece = "p" if turn else "P"
+                Mcount,Tcount = turn_count(Mcount,Tcount)
+        #==========================================
+        
+        #==============Update en passant condition ==============
+        if move_successful:
+            en_passant_condition = next_en_passant_condition
+            en_passant_coords = next_en_passant_coords
+        else:
+            en_passant_condition = False
+            en_passant_coords = None
+        #==========================================
+
+        Wscore,Bscore = scoring(target_piece,Wscore,Bscore,turn)
         
         print_board(matrix)#print board
-        
+        print(f"Moves:{Mcount}|Turns:{Tcount}")
+        print(f"W:{Wscore}|B:{Bscore}")
+
+
         # Switch turns
-        if move:
+        if move_successful:
             turn = not turn
         else:
             print("Invalid move. Try again.")

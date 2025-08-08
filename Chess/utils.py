@@ -1,43 +1,30 @@
 
 
 # === Coordinate & Board Helpers ===
-def is_empty(#true if the new position is empty
-        matrix,new_piece_x, new_piece_y): 
-    return matrix[new_piece_x][new_piece_y] == "-"
-   
-def is_enemy(#true if the new position is occupied by an enemy piece
-        matrix, choose_piece_x, choose_piece_y, new_piece_x, new_piece_y, white_pieces, black_pieces):
-    return (
-        (matrix[new_piece_x][new_piece_y] in white_pieces and matrix[choose_piece_x][choose_piece_y] in black_pieces) or
-        (matrix[new_piece_x][new_piece_y] in black_pieces and matrix[choose_piece_x][choose_piece_y] in white_pieces)
+
+def is_enemy_or_empty(matrix, x, y, cx, cy, white_pieces, black_pieces): 
+    return not (
+        (matrix[cx][cy] in white_pieces and matrix[x][y] in white_pieces) or
+        (matrix[cx][cy] in black_pieces and matrix[x][y] in black_pieces)
     )
 
-def is_same_side(#true if the new position is occupied by a friendly piece
-        matrix, choose_piece_x, choose_piece_y, new_piece_x, new_piece_y,white_pieces, black_pieces): 
-    return (
-        (matrix[new_piece_x][new_piece_y] in white_pieces and matrix[choose_piece_x][choose_piece_y] in white_pieces) or
-        (matrix[new_piece_x][new_piece_y] in black_pieces and matrix[choose_piece_x][choose_piece_y] in black_pieces)
-    )
-
-def clear_path(#true if the path is clear for sliding pieces
-        matrix, choose_piece_x, choose_piece_y, new_piece_x, new_piece_y): 
-    dx = abs(new_piece_x - choose_piece_x)
-    dy = abs(new_piece_y - choose_piece_y)
+def clear_path(matrix, x, y, cx, cy): #true if the path is clear for sliding pieces
+    dx = abs(cx - x)
+    dy = abs(cy - y)
     distance = max(dx, dy) #
 
     # Direction of movement: -1, 0, or +1
-    x_step = (new_piece_x - choose_piece_x) // distance if new_piece_x != choose_piece_x else 0
-    y_step = (new_piece_y - choose_piece_y) // distance if new_piece_y != choose_piece_y else 0
+    x_step = (cx - x) // distance if cx != x else 0
+    y_step = (cy - y) // distance if cy != y else 0
 
     for i in range(1, distance):
-        check_x = choose_piece_x + i * x_step
-        check_y = choose_piece_y + i * y_step
+        check_x = x + i * x_step
+        check_y = y + i * y_step
         if matrix[check_x][check_y] != "-":
             return False
     return True
     
-def parse_coord(#Convert input like 'a2' into matrix indices.
-            coord):
+def parse_coord(coord):#Convert input like 'a2' into matrix indices.
     """Convert input like 'a2' into matrix indices."""
     if len(coord) < 2 or not coord[0].isalpha() or not coord[1:].isdigit():
         return None, None
@@ -45,27 +32,64 @@ def parse_coord(#Convert input like 'a2' into matrix indices.
     y = ord(coord[0].lower()) - ord('a')
     return 8 - x, y  # Matrix indexing (row from top, col from left
 
+def scoring(target_piece,Wscore,Bscore,turn):
+    piece_values = {
+    "P": 1,  # White Pawn
+    "p": 1,  # Black Pawn
+    "N": 3,  # White Knight
+    "n": 3,  # Black Knight
+    "B": 3,  # White Bishop
+    "b": 3,  # Black Bishop
+    "R": 5,  # White Rook
+    "r": 5,  # Black Rook
+    "Q": 9,  # White Queen
+    "q": 9,}  # Black Queen
+    Cscore = piece_values.get(target_piece, 0)
+    if turn:
+        Wscore += Cscore
+    else:
+        Bscore += Cscore
+
+    return Wscore,Bscore
+
+def turn_count(Mcount,Tcount):
+    Mcount += 1
+    if Mcount % 2 == 0:
+        Tcount += 1
+    return Mcount,Tcount
+
 # === valid selection ===
-def get_valid_piece_selection(#check coord is valid and choose the piece
-                        matrix, turn, black_pieces, white_pieces,choose_piece):
+def select_valid_piece(matrix, turn, black_pieces, white_pieces):
     while True:
         coord = input("Choose piece (e.g. a2): ")
         choose_piece_x, choose_piece_y = parse_coord(coord)
 
         if choose_piece_x is None or choose_piece_y is None:
-            print("Invalid format. Use coordinates like a2, e4, etc.")
+            print("Invalid format: a2, e4")
             continue
 
-        if not (0 <= choose_piece_x < 8 and 0 <= choose_piece_y < 8):
+        elif not (0 <= choose_piece_x < 8 and 0 <= choose_piece_y < 8):
             print("Out of board range. Try again.")
             continue
 
-        if choose_piece(choose_piece_x, choose_piece_y, matrix, turn, black_pieces, white_pieces):
-            return choose_piece_x, choose_piece_y
-        else:
-            print("Invalid selection. Try again.")
+        piece = matrix[choose_piece_x][choose_piece_y]
 
-def get_valid_piece_move(#check new coord is valid
+        if piece == "-":
+            print("This square is empty.")
+            continue
+
+        if turn and piece in white_pieces:
+            print(f"You have chosen a {white_pieces[piece]}.")
+            return choose_piece_x, choose_piece_y
+
+        elif not turn and piece in black_pieces:
+            print(f"You have chosen a {black_pieces[piece]}.")
+            return choose_piece_x, choose_piece_y
+
+        else:
+            print(f"You have chosen an enemy piece ({piece}). Try again.")
+
+def select_move_destination(#check new coord is valid
                         ):
      while True:
         coord = input("Enter move (e.g. a4): ")
@@ -81,107 +105,74 @@ def get_valid_piece_move(#check new coord is valid
 
         return new_piece_x, new_piece_y
 
-def choose_piece(#true if the piece is valid
-        choose_piece_x, choose_piece_y, matrix, turn, black_pieces, white_pieces):
-    
-    piece = matrix[choose_piece_x][choose_piece_y]
-
-    if piece == "-":
-        print("This square is empty.")
-        return False
-
-    if turn and piece in white_pieces:
-        print(f"You have chosen a {white_pieces[piece]}.")
-        return True
-    
-    elif not turn and piece in black_pieces:
-        print(f"You have chosen a {black_pieces[piece]}.")
-        return True
-     
-    else:
-        print(f"You have chosen an enemy piece ({piece}).")
-        return False
-
-# === Piece Selection Conditions ===
-def pawn_Movement_condition(#true if the move is valid
-        new_piece_x, new_piece_y, choose_piece_x, choose_piece_y,turn): #true if the move is valid 
-    dx = abs(new_piece_x - choose_piece_x)
-    dy = abs(new_piece_y - choose_piece_y)
-    if dx == 1 and dy == 1:
-        if turn and new_piece_x < choose_piece_x:  # white pawn (moves down)
-            return True
-        elif not turn and new_piece_x > choose_piece_x:  # black pawn (moves up)
-            return True
-        
-    if dx == 1 and dy == 0:
-        if turn and new_piece_x < choose_piece_x:
-            return True
-        elif not turn and new_piece_x > choose_piece_x:
-            return True
-        
-    if dx == 2 and dy == 0:
-        if turn and choose_piece_x == 6 and new_piece_x == 4:  # white pawn from row 6 to 4
-            return True
-        elif not turn and choose_piece_x == 1 and new_piece_x == 3:  # black pawn from row 1 to 3
-            return True
-
-def knight_Movement_condition(#true if the move is valid
-        new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
-    dx = abs(new_piece_x - choose_piece_x)
-    dy = abs(new_piece_y - choose_piece_y)
-    return ((dx == 2 and dy == 1) or (dx == 1 and dy == 2))
-   
-def bishop_Movement_condition(#true if the move is valid
-        new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
-    dx = abs(new_piece_x - choose_piece_x)
-    dy = abs(new_piece_y - choose_piece_y)
-    return dx == dy
-
-def rook_Movement_condition(#true if the move is valid
-        new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
-    return new_piece_x == choose_piece_x or new_piece_y == choose_piece_y
-
-def queen_Movement_condition(#true if the move is valid
-    new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
-    dx = abs(new_piece_x - choose_piece_x)
-    dy = abs(new_piece_y - choose_piece_y)
-    return (dx == dy or new_piece_x == choose_piece_x or new_piece_y == choose_piece_y)
-
-def king_Movement_condition(#true if the move is valid
-        new_piece_x, new_piece_y, choose_piece_x, choose_piece_y):#true if the move is valid
-    dx = abs(new_piece_x - choose_piece_x)
-    dy = abs(new_piece_y - choose_piece_y)
-    return max(dx, dy) == 1
-
-
 # === Piece Actions ===
-def piece_captured_move(#move the piece and capture the enemy piece
-matrix, new_piece_x, new_piece_y, choose_piece_x, choose_piece_y,turn,white_pieces, black_pieces, white_score, black_score,piece_values): #move the piece and capture the enemy piece
-    moving_piece = matrix[choose_piece_x][choose_piece_y] #choosen piece 
-    target_piece = matrix[new_piece_x][new_piece_y]       #where moving piece is going
+def piece_captured_move(matrix, cx, cy, x, y, turn, white_pieces, black_pieces):
+    moving_piece = matrix[x][y]
+    target_piece = matrix[cx][cy]
     captured = target_piece != "-"
-    
-    if captured:
-        captured_name = black_pieces[target_piece] if turn else white_pieces[target_piece] #captured piece name
-        print(f"{captured_name} captured successfully.") 
-        score = piece_values.get(target_piece, 0)
-        if turn:
-            white_score += score
-        else:
-            black_score += score
+
+    if target_piece != "-":
+        captured_name = black_pieces[target_piece] if turn else white_pieces[target_piece]
+        print(f"{captured_name} captured successfully.")
     else:
-        moved_name = white_pieces[moving_piece] if turn else black_pieces[moving_piece] #moving piece name
+        moved_name = white_pieces[moving_piece] if turn else black_pieces[moving_piece]
         print(f"{moved_name} moved successfully.")
-    print(f"White score: {white_score} | Black score: {black_score}")
-    matrix[new_piece_x][new_piece_y] = matrix[choose_piece_x][choose_piece_y] #moving piece to new position
-    matrix[choose_piece_x][choose_piece_y] = "-" #clearing old position
 
-    return black_score, white_score
+    matrix[cx][cy] = moving_piece
+    matrix[x][y] = "-"
 
-    
-    
-    
-     
+    return target_piece, True
+        
+def en_passant_detection(x, y, cx, cy, matrix):
+    if matrix[x][y] not in ("p", "P"):
+        return False, None
+
+    if abs(cx - x) == 2:
+        en_passant_target = (cx, cy)  # <- the pawn that moved 2 steps
+        return True, en_passant_target
+
+    return False, None
+
+def en_passant_capture(x, y, cx, cy, turn, matrix, en_passant_coords):
+    dx = abs(cx - x)
+    dy = abs(cy - y)
+
+    if en_passant_coords is None:
+        return False
+
+    if (
+        turn and
+        matrix[x][y] == "P" and
+        x == 3 and
+        dx == 1 and dy == 1 and
+        cy == en_passant_coords[1] and
+        (
+            (y < 7 and matrix[x][y + 1] == "p") or
+            (y > 0 and matrix[x][y - 1] == "p")
+        )
+    ) or (
+        not turn and
+        matrix[x][y] == "p" and
+        x == 3 and
+        dx == 1 and dy == 1 and
+        cy == en_passant_coords[1] and
+        (
+            (y < 7 and matrix[x][y + 1] == "P") or
+            (y > 0 and matrix[x][y - 1] == "P")
+        )
+    ):
+        matrix[cx][cy] = matrix[x][y]
+        matrix[x][y] = "-"
+        matrix[en_passant_coords[0]][en_passant_coords[1]] = "-"
+        return True
+
+    return False
+        
+
+
+
+
+
     
     
     
