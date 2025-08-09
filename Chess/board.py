@@ -4,7 +4,7 @@ def setup_board():
     matrix = [["-" for _ in range(8)] for _ in range(8)]
     matrix[1] = ["p"] * 8
     matrix[6] = ["P"] * 8
-    matrix[3][3] = "P"
+    # matrix[2][2] = "p"
     matrix[0] = ["r", "n", "b", "q", "k", "b", "n", "r"]
     matrix[7] = ["R", "N", "B", "Q", "K", "B", "N", "R"]
 

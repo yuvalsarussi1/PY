@@ -1,5 +1,6 @@
 from pieces_conditions import *
 from utils import clear_path
+
 movement_rules = {
     "P": lambda x, y, cx, cy, turn, matrix: pawn_Movement_condition(x, y, cx, cy, turn, matrix),
     "p": lambda x, y, cx, cy, turn, matrix: pawn_Movement_condition(x, y, cx, cy, turn, matrix),

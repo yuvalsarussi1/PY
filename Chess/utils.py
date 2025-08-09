@@ -1,7 +1,5 @@
 
-
 # === Coordinate & Board Helpers ===
-
 def is_enemy_or_empty(matrix, x, y, cx, cy, white_pieces, black_pieces): 
     return not (
         (matrix[cx][cy] in white_pieces and matrix[x][y] in white_pieces) or
@@ -31,7 +29,7 @@ def parse_coord(coord):#Convert input like 'a2' into matrix indices.
     x = int(coord[1:])
     y = ord(coord[0].lower()) - ord('a')
     return 8 - x, y  # Matrix indexing (row from top, col from left
-
+# === Scoring ===
 def scoring(target_piece,Wscore,Bscore,turn):
     piece_values = {
     "P": 1,  # White Pawn
@@ -52,6 +50,7 @@ def scoring(target_piece,Wscore,Bscore,turn):
 
     return Wscore,Bscore
 
+# === Turn Count ===
 def turn_count(Mcount,Tcount):
     Mcount += 1
     if Mcount % 2 == 0:
@@ -122,8 +121,9 @@ def piece_captured_move(matrix, cx, cy, x, y, turn, white_pieces, black_pieces):
     matrix[x][y] = "-"
 
     return target_piece, True
-        
-def en_passant_detection(x, y, cx, cy, matrix):
+
+# === En Passant ===    
+def en_passant_detection(x, y, cx, cy, turn, matrix):
     if matrix[x][y] not in ("p", "P"):
         return False, None
 

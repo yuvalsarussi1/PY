@@ -1,117 +1,129 @@
+from board import setup_board
 
-def board_pass(matrix, ):
-    for row in range(8):
-        for col in range(8):
-            piece = matrix[row][col]
-    return piece
 
-def check_knight_targets(matrix,turn,row,col):
+def _ray_cast(x, y, matrix, dx, dy, size=8):
+    """Walk one direction until edge or first blocker.
+    Return all squares along the ray, including the first occupied square,
+    and stop there (can't threaten past a blocker)."""
+    path = []
+    nx, ny = x + dx, y + dy
+    while 0 <= nx < size and 0 <= ny < size:
+        path.append((nx, ny))
+        if matrix[nx][ny] != "-":   # blocker encountered; include and stop
+            break
+        nx += dx
+        ny += dy
+    return path
 
-    knight_moves = [(2, 1), (1, 2), (-1, 2), (-2, 1),(-2, -1), (-1, -2), (1, -2), (2, -1)]
+# === Threats_of_piece ===
+def pawn_threat(x, y, turn, threatens, size=8):
+    # Determine which direction the pawn attacks
+    if turn:  # White pawn → attacks upward (row index decreases)
+        deltas = [(-1, -1), (-1, 1)]
+    else:     # Black pawn → attacks downward (row index increases)
+        deltas = [(1, -1), (1, 1)]
+
+    targets = []
+    for dx, dy in deltas:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < size and 0 <= ny < size:  # Stay within board
+            targets.append((nx, ny))
+
+    threatens.setdefault((x, y), []).extend(targets)
+    return threatens
+
+def king_threat(x, y, threatens, size=8):
+    deltas = [(1, 0), (1, 1), (1, -1),
+              (0, 1), (0, -1),
+              (-1, 0), (-1, 1), (-1, -1)]
+
+    targets = []
+    for dx, dy in deltas:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < size and 0 <= ny < size:  # stay on board
+            targets.append((nx, ny))
+
+    threatens.setdefault((x, y), []).extend(targets)
+    return threatens
+
+def knight_threat(x, y, threatens, size=8):
+    deltas = [(2, 1), (1, 2), (-1, 2), (-2, 1),
+              (-2, -1), (-1, -2), (1, -2), (2, -1)]
+    targets = []
+    for dx, dy in deltas:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < size and 0 <= ny < size:
+            targets.append((nx, ny))
+    threatens.setdefault((x, y), []).extend(targets)
+    return threatens
     
-    for dx, dy in knight_moves:
-        check_x = row + dx
-        check_y = col + dy
-        if 0 <= check_x < 8 and 0 <= check_y < 8:
-            target = matrix[check_x][check_y]
-            if turn and target == "K":
-                return True
-            elif not turn and target == "k":
-                return True
+def bishop_threat(x, y, matrix, threatens, size=8):
+    rays = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+    targets = []
+    for dx, dy in rays:
+        targets.extend(_ray_cast(x, y, matrix, dx, dy, size))
+    threatens.setdefault((x, y), []).extend(targets)
+    return threatens
 
-    return False
+def rook_threat(x, y, matrix, threatens, size=8):
+    rays = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    targets = []
+    for dx, dy in rays:
+        targets.extend(_ray_cast(x, y, matrix, dx, dy, size))
+    threatens.setdefault((x, y), []).extend(targets)
+    return threatens
 
-def is_in_check(matrix, turn):
-    king_symbol = "K" if turn else "k"
-    enemy_pieces = {
-        "P": turn is False,  # black's turn → white pawns are enemy
-        "p": turn is True,
-        "N": turn is False,
-        "n": turn is True,
-        "B": turn is False,
-        "b": turn is True,
-        "R": turn is False,
-        "r": turn is True,
-        "Q": turn is False,
-        "q": turn is True,
-        "K": turn is False,
-        "k": turn is True
-    }
+def queen_threat(x, y, matrix, threatens, size=8):
+    # queen = rook + bishop
+    bishop_threat(x, y, matrix, threatens, size)
+    rook_threat(x, y, matrix, threatens, size)
+    return threatens
 
-    # Step 1: Locate the king
-    king_pos = None
+#=== Threats_Functions ===
+def board_threat_check(matrix):
+    threatens = {}
     for row in range(8):
         for col in range(8):
-            if matrix[row][col] == king_symbol:
-                king_pos = (row, col)
-                break
-        if king_pos:
-            break
-
-    if not king_pos:
-        return False  # No king on board
-
-    king_x, king_y = king_pos
-
-    # Step 2: Check for knight threats
-    knight_moves = [(2, 1), (1, 2), (-1, 2), (-2, 1),
-                    (-2, -1), (-1, -2), (1, -2), (2, -1)]
-    for dx, dy in knight_moves:
-        x, y = king_x + dx, king_y + dy
-        if 0 <= x < 8 and 0 <= y < 8:
-            piece = matrix[x][y]
-            if piece in enemy_pieces and piece.lower() == 'n':
-                return True
-
-    # Step 3: Check straight lines (rook/queen)
-    directions = [(1,0), (-1,0), (0,1), (0,-1)]
-    for dx, dy in directions:
-        x, y = king_x, king_y
-        while True:
-            x += dx
-            y += dy
-            if not (0 <= x < 8 and 0 <= y < 8):
-                break
-            piece = matrix[x][y]
-            if piece == "-":
+            p = matrix[row][col]
+            if p == "-":
                 continue
-            if piece in enemy_pieces and (piece.lower() == 'r' or piece.lower() == 'q'):
-                return True
-            break  # blocked by any piece
+            is_white = p.isupper()
 
-    # Step 4: Check diagonals (bishop/queen/pawn)
-    diagonals = [(1,1), (1,-1), (-1,1), (-1,-1)]
-    for dx, dy in diagonals:
-        x, y = king_x, king_y
-        while True:
-            x += dx
-            y += dy
-            if not (0 <= x < 8 and 0 <= y < 8):
-                break
-            piece = matrix[x][y]
-            if piece == "-":
-                continue
-            if piece in enemy_pieces:
-                if piece.lower() == 'b' or piece.lower() == 'q':
-                    return True
-                # check pawn diagonals
-                if piece.lower() == 'p':
-                    if turn and dx == -1:  # white king, black pawn
-                        return True
-                    elif not turn and dx == 1:  # black king, white pawn
-                        return True
-            break
+            if p in ("P", "p"):
+                pawn_threat(row, col, is_white, threatens)
+            elif p in ("K", "k"):
+                king_threat(row, col, threatens)
+            elif p in ("N", "n"):
+                knight_threat(row, col, threatens)
+            elif p in ("B", "b"):
+                bishop_threat(row, col, matrix, threatens)
+            elif p in ("R", "r"):
+                rook_threat(row, col, matrix, threatens)      # <-- pass threatens
+            elif p in ("Q", "q"):
+                queen_threat(row, col, matrix, threatens)
+    return threatens
 
-    # Step 5: Check adjacent king
-    for dx in [-1, 0, 1]:
-        for dy in [-1, 0, 1]:
-            if dx == 0 and dy == 0:
-                continue
-            x = king_x + dx
-            y = king_y + dy
-            if 0 <= x < 8 and 0 <= y < 8:
-                piece = matrix[x][y]
-                if piece in enemy_pieces and piece.lower() == 'k':
-                    return True
+def print_threatens(threatens):
+    for piece, positions in threatens.items():
+        print(f"{piece}: {positions}")
 
-    return False
+#=== King_Check ===
+def king_in_check(matrix,threatens,black_pieces,white_pieces):
+    check_black = False
+    check_white = False
+    
+    for key,values in threatens.items():
+        attacker = matrix[key[0]][key[1]]
+        
+        for value_x, value_y in values:
+            target = matrix[value_x][value_y]
+            
+            if target == "k" and attacker in white_pieces:
+                print(f"Black King in check! Attacked by {white_pieces[attacker]} from {key}")
+                check_black = True
+
+            elif target == "K" and attacker in black_pieces:
+                print(f"White King in check! Attacked by {black_pieces[attacker]} from {key}")
+                check_white = True
+
+    return check_white,check_black
